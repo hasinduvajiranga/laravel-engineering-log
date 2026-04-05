@@ -1,0 +1,14 @@
+{
+    "name": "hasinduvajiranga/laravel-engineering-log",
+    "type": "project",
+    "require-dev": {
+        "pestphp/pest": "^3.8",
+        "laravel/pint": "^1.29",
+        "phpstan/phpstan": "^2.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
