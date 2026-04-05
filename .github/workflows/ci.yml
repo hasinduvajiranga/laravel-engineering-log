@@ -90,4 +90,4 @@ jobs:
       - name: Run Quality Gates
         run: |
           php vendor/bin/phpstan analyse --memory-limit=1G
-          php vendor/bin/pest days/ --parallel
+          php vendor/bin/pest
