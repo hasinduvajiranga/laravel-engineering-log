@@ -72,17 +72,22 @@ jobs:
           ## 📚 References
           - 
           ENDMARKDOWN
-
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A
-            if ! git diff --cached --quiet; then
-              git commit -m "chore(daily): scaffold $(date -u +%Y-%m-%d)"
-              git push
-            fi
           fi
+
+      - name: Fix Code Style (Pint)
+        run: php vendor/bin/pint
+
+      - name: Commit Style Fixes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "style: auto-fix with Laravel Pint"
+            git push
+          fi
+
       - name: Run Quality Gates
         run: |
-          php vendor/bin/pint --test
           php vendor/bin/phpstan analyse --memory-limit=1G
           php vendor/bin/pest days/ --parallel
