@@ -11,15 +11,21 @@ permissions:
   contents: write
 
 jobs:
-  scaffold-daily:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  daily-engineering-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create daily entry if missing
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - run: composer install --no-interaction --prefer-dist
+
+      - name: Scaffold daily entry if missing
         run: |
           DATE=$(date -u +%Y-%m-%d)
           DIR="days/${DATE}"
@@ -29,17 +35,14 @@ jobs:
             <?php declare(strict_types=1);
             namespace App\Daily;
             class DailyConcept {
-                public function execute(): string {
-                    return 'Replace with senior-level concept implementation';
-                }
+                public function execute(): string { return 'Replace with senior-level concept'; }
             }
             PHP
             cat > "${DIR}/concept-test.php" << 'PHP'
             <?php declare(strict_types=1);
             use App\Daily\DailyConcept;
-            it('implements today\'s architectural concept', function () {
-                $concept = new DailyConcept();
-                expect($concept->execute())->toBeString();
+            it('implements today concept', function () {
+                expect((new DailyConcept())->execute())->toBeString();
             });
             PHP
             cat > "${DIR}/notes.md" << EOF
@@ -50,35 +53,20 @@ jobs:
             - 
             ## ⚠️ Trade-offs & Alternatives Considered
             - 
-            ## 📚 References / Laravel Docs
+            ## 📚 References
             - 
             EOF
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(daily): scaffold $(date -u +%Y-%m-%d)"
+              git push
+            fi
           fi
 
-      - name: Commit & push scaffold
+      - name: Run Quality Gates
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(daily): scaffold $(date -u +%Y-%m-%d)"
-            git push
-          fi
-
-  quality-gate:
-    needs: scaffold-daily
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          coverage: none
-
-      - run: composer install --no-interaction --prefer-dist
-
-      - run: php vendor/bin/pint --test
-      - run: php vendor/bin/phpstan analyse --memory-limit=1G
-      - run: php vendor/bin/pest days/ --parallel
+          php vendor/bin/pint --test
+          php vendor/bin/phpstan analyse --memory-limit=1G
+          php vendor/bin/pest days/ --parallel
