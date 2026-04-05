@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'hasinduvajiranga/laravel-engineering-log',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'b239d63f35fe880e4c632f9e13147441e86e26d8',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -47,9 +47,9 @@
             'dev_requirement' => true,
         ),
         'hasinduvajiranga/laravel-engineering-log' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'b239d63f35fe880e4c632f9e13147441e86e26d8',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
