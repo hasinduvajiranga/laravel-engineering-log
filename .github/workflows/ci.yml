@@ -31,31 +31,35 @@ jobs:
           DIR="days/${DATE}"
           if [ ! -d "$DIR" ]; then
             mkdir -p "$DIR"
-            cat > "${DIR}/concept.php" << 'PHP'
-            <?php declare(strict_types=1);
-            namespace App\Daily;
-            class DailyConcept {
-                public function execute(): string { return 'Replace with senior-level concept'; }
-            }
-            PHP
-            cat > "${DIR}/concept-test.php" << 'PHP'
-            <?php declare(strict_types=1);
-            use App\Daily\DailyConcept;
-            it('implements today concept', function () {
-                expect((new DailyConcept())->execute())->toBeString();
-            });
-            PHP
-            cat > "${DIR}/notes.md" << EOF
-            # 📅 ${DATE}
-            ## 🎯 Concept
-            - 
-            ## 🏗️ Architecture/Performance Decision
-            - 
-            ## ⚠️ Trade-offs & Alternatives Considered
-            - 
-            ## 📚 References
-            - 
-            EOF
+          
+            tee "${DIR}/concept.php" > /dev/null << 'ENDPHP'
+          <?php declare(strict_types=1);
+          namespace App\Daily;
+          class DailyConcept {
+              public function execute(): string { return 'Replace with senior-level concept'; }
+          }
+          ENDPHP
+
+            tee "${DIR}/concept-test.php" > /dev/null << 'ENDPHP'
+          <?php declare(strict_types=1);
+          use App\Daily\DailyConcept;
+          it('implements today concept', function () {
+              expect((new DailyConcept())->execute())->toBeString();
+          });
+          ENDPHP
+
+            tee "${DIR}/notes.md" > /dev/null << ENDMARKDOWN
+          # 📅 ${DATE}
+          ## 🎯 Concept
+          - 
+          ## 🏗️ Architecture/Performance Decision
+          - 
+          ## ⚠️ Trade-offs & Alternatives Considered
+          - 
+          ## 📚 References
+          - 
+          ENDMARKDOWN
+
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add -A
@@ -64,7 +68,6 @@ jobs:
               git push
             fi
           fi
-
       - name: Run Quality Gates
         run: |
           php vendor/bin/pint --test
