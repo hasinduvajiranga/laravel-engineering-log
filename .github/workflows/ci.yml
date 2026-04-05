@@ -33,18 +33,31 @@ jobs:
             mkdir -p "$DIR"
           
             tee "${DIR}/concept.php" > /dev/null << 'ENDPHP'
-          <?php declare(strict_types=1);
+          <?php
+
+          declare(strict_types=1);
+
           namespace App\Daily;
-          class DailyConcept {
-              public function execute(): string { return 'Replace with senior-level concept'; }
+
+          class DailyConcept
+          {
+              public function execute(): string
+              {
+                  return 'Replace with senior-level concept';
+              }
           }
           ENDPHP
 
             tee "${DIR}/concept-test.php" > /dev/null << 'ENDPHP'
-          <?php declare(strict_types=1);
+          <?php
+
+          declare(strict_types=1);
+
           use App\Daily\DailyConcept;
+
           it('implements today concept', function () {
-              expect((new DailyConcept())->execute())->toBeString();
+              $concept = new DailyConcept;
+              expect($concept->execute())->toBeString();
           });
           ENDPHP
 
