@@ -2,4 +2,4 @@ parameters:
     paths:
         - days/
     level: 5
-    checkMissingIterableValueType: false
+    reportUnmatchedIgnoredErrors: false
