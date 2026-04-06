@@ -1,13 +1,22 @@
-<?php
+// src/Http/Client.php
 
-declare(strict_types=1);
+namespace App\Http;
 
-namespace App\Daily;
+use Illuminate\Support\Facades\Http;
 
-class DailyConcept
+class HttpClient
 {
-    public function execute(): string
+    private $client;
+
+    public function __construct()
     {
-        return 'Replace with senior-level concept';
+        $this->client = new Http\Client();
+    }
+
+    public function sendRequest($method, string $uri, array $data = [], str
+string $header = null)
+    {
+        return $this->client->request($method, $uri, ['body' => $data, 'hea
+'headers' => [$header ?? {}]]);
     }
 }
