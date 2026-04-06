@@ -1,22 +1,60 @@
-// src/Http/Client.php
+// File: app/Console/Commands/CreateUser.php
 
-namespace App\Http;
+namespace App\Console\Commands;
 
-use Illuminate\Support\Facades\Http;
+use Illuminate\Console\Command;
+use App\Models\User;
 
-class HttpClient
+class CreateUser extends Command
 {
-    private $client;
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'create:user {name} {email}';
 
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Create a new user';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
     public function __construct()
     {
-        $this->client = new Http\Client();
+        parent::__construct();
     }
 
-    public function sendRequest($method, string $uri, array $data = [], str
-string $header = null)
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
     {
-        return $this->client->request($method, $uri, ['body' => $data, 'hea
-'headers' => [$header ?? {}]]);
+        $name = $this->argument('name');
+        $email = $this->argument('email');
+
+        if (!userExists($email)) {
+            User::create([
+                'name' => $name,
+                'email' => $email,
+            ]);
+
+            $this->info("User created successfully");
+        } else {
+            $this->error("Email already exists");
+        }
+    }
+
+    private function userExists($email)
+    {
+        return User::where('email', $email)->exists();
     }
 }

@@ -1,43 +1,47 @@
-// tests/Http/ClientTest.php
+// File: tests/Console/Commands/CreateUserTest.php
 
-namespace Tests\Http;
+namespace Tests\Console\Commands;
 
-use App\Http\HttpClient;
-use Tests\TestCase;
+use App\Console\Commands>CreateUser;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Facades\DB;
 
-class HttpClientTest extends TestCase
+class CreateUserTest extends TestCase
 {
-    public function testSendRequest()
+    use DatabaseMigrations;
+
+    public function testCreateUserSuccess()
     {
-        $client = new HttpClient();
+        $this->artisan('create:user', ['name' => 'John Doe', 'email' => 'jo
+'john@example.com']);
+        $user = User::where('email', 'john@example.com')->first();
 
-        $response = $client->sendRequest('GET', '/api/users');
-
-        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('John Doe', $user->name);
     }
 
-    public function testSendRequestWithHeaders()
+    public function testCreateUserFail()
     {
-        $client = new HttpClient();
-        $headers = ['Authorization' => 'Bearer 12345'];
+        $this->artisan('create:user', ['name' => 'John Doe', 'email' => 'jo
+'john@example.com']);
+        $this->artisan('create:user', ['name' => 'Jane Doe', 'email' => 'jo
+'john@example.com']);
 
-        $response = $client->sendRequest('GET', '/api/users', null, $header
-$headers);
+        $user = User::where('email', 'john@example.com')->first();
 
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals($headers['Authorization'], $response->getHeader
-$response->getHeaders()['Authorization']);
+        $this->null($user);
     }
 
-    public function testSendRequestWithFormData()
+    public function testCreateUserFailExisting()
     {
-        $client = new HttpClient();
-        $data = ['name' => 'John Doe', 'email' => 'john@example.com'];
+        $this->artisan('create:user', ['name' => 'John Doe', 'email' => 'jo
+'john@example.com']);
+        $this->artisan('create:user', ['name' => 'Jane Doe', 'email' => 'jo
+'john@example.com']);
 
-        $response = $client->sendRequest('POST', '/api/users', $data);
+        $user = User::where('email', 'john@example.com')->first();
 
-        $this->assertEquals(201, $response->getStatusCode());
-        $this->assertContains($data['name'], json_decode($response->getBody
-json_decode($response->getBody(), true));
+        $this->assertInstanceOf(User::class, $user);
     }
 }
