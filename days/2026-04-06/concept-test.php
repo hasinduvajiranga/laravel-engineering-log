@@ -1,61 +1,50 @@
-// Test the polymorphic relationships using PHPUnit
-namespace Tests\Models;
+// Test case for polymorphic relationships
+namespace Tests\Feature\Models;
 
-use App\Models\User;
-use App\Models\Post;
-use App\Models\Comment;
+use App\Models\ChildModel;
+use App\Models\ParentModel;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\TestEnabled;
+use Illuminate\Foundation\Testing\WithoutMigrations;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 
-class PolymorphicRelationshipTest extends TestCase
+class PolymorphicRelationshipsTest extends TestCase
 {
-    public function testUserHasPosts()
+    use DatabaseMigrations, RefreshDatabase, TestEnabled, WithoutMigrations
+WithoutMigrations;
+
+    public function test_polymorphic_relationships()
     {
-        // Create a new User instance
-        $user = factory(User::class)->create();
+        // Create a parent model and save it to the database
+        $parent = new ParentModel();
+        $parent->name = 'Parent Model';
+        $parent->save();
 
-        // Get the posts associated with the user
-        $posts = $user->posts()->get();
+        // Create two child models that are related to the same parent mode
+model
+        $child1 = new ChildModel();
+        $child1->name = 'Child 1';
+        $child1->parent_id = $parent->id;
+        $child1->save();
 
-        // Verify that there is at least one post associated with the user
-        self::assertGreaterThanOrEqual(1, count($posts));
-    }
+        $child2 = new ChildModel();
+        $child2->name = 'Child 2';
+        $child2->parent_id = $parent->id;
+        $child2->save();
 
-    public function testUserHasComments()
-    {
-        // Create a new User instance
-        $user = factory(User::class)->create();
+        // Test that the parent model's children relationship returns both 
+child models
+        foreach ($parent->children as $child) {
+            $this->assertEquals($child->name, 'Child 1');
+            $this->assertEquals($child->name, 'Child 2');
+        }
 
-        // Get the comments associated with the user
-        $comments = $user->comments()->get();
-
-        // Verify that there is at least one comment associated with the us
-user
-        self::assertGreaterThanOrEqual(1, count($comments));
-    }
-
-    public function testPostHasUserAndComments()
-    {
-        // Create a new Post instance
-        $post = factory(Post::class)->create();
-
-        // Get the user and comments associated with the post
-        $user = $post->user()->first();
-        $comments = $post->comments()->get();
-
-        // Verify that there is a user and at least one comment associated 
-with the post
-        self::assertNotNull($user);
-        self::assertGreaterThanOrEqual(1, count($comments));
-    }
-
-    public function testCommentHasPost()
-    {
-        // Create a new Comment instance
-        $comment = factory(Comment::class)->create();
-
-        // Get the post associated with the comment
-        $post = $comment->posts()->first();
-
-        // Verify that there is a post associated with the comment
-        self::assertNotNull($post);
+        // Test that the child model's parents relationship returns the par
+parent model
+        foreach ($child1->parents as $parent) {
+            $this->assertEquals($parent->name, 'Parent Model');
+        }
     }
 }

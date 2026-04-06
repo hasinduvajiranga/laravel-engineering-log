@@ -1,65 +1,87 @@
 # Polymorphic Relationships
 
-Polymorphic relationships are a powerful tool in Laravel that allow you to 
-define a many-to-many relationship between two tables, but instead of using
-using a separate pivot table, you use the polymorphic pivot table feature.
+In Laravel, a polymorphic relationship is a type of relationship where a si
+single model can have multiple related models, and each related model has a
+a foreign key to the original model. This allows for more flexibility in de
+defining relationships between models.
 
-## Benefits
+## Defining a Polymorphic Relationship
 
-*   Simplifies database schema design
-*   Reduces the need for additional pivot tables
-*   Allows for more flexible and dynamic relationships
-
-## How it works
-
-1.  Define a base model that represents the entity with the polymorphic rel
-relationship.
-2.  Define an inverse method on the related model that uses the `BelongsTo`
-`BelongsTo` or `HasMany` trait to establish the relationship.
-3.  Use the `HasMany` or `BelongsTo` trait on the inverse method to define 
-the relationship.
-4.  Inverse methods can also be used to establish relationships between mod
-models in different tables.
-
-## Example
-
-Consider a scenario where you have a `User` entity that has multiple `Post`
-`Post`s and multiple `Comment`s associated with it, but each post has only 
-one user. You could use polymorphic relationships to define the relationshi
-relationships like this:
+To define a polymorphic relationship, you need to create a `morphMany` or `
+`morphOne` relationship on one of your models. The `child` and `parent` met
+methods are used to define these relationships.
 
 ```php
-class Post extends Model
+public function children(): MorphMany
 {
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    protected $table = 'post_user_pivot';
+    return $this->morphMany(BaseModel::class, 'child');
 }
 
-class Comment extends Model
+public function child(): MorphOne
 {
-    public function post(): HasMany
-    {
-        return $this->hasMany(Post::class);
-    }
-
-    protected $table = 'comment_post_pivot';
+    return $this->morphOne(ParentModel::class, 'parent');
 }
 ```
 
-In this example, the `Post` model has a polymorphic relationship with the `
-`User` entity using the `BelongsTo` trait. The `Comment` model has a many-t
-many-to-many relationship with the `Post` entity using the `HasMany` trait.
-trait.
+## Using Polymorphic Relationships
 
-## Advantages
+When using polymorphic relationships, you need to specify the foreign key o
+on the related model that will be used to store the ID of the original mode
+model.
 
-Polymorphic relationships offer several advantages over traditional pivot t
-table design, including:
+For example:
 
-*   Simplified database schema design
-*   Reduced need for additional pivot tables
-*   More flexible and dynamic relationships
+```php
+// Define a child model that has a foreign key to the parent model
+class ChildModel extends BaseModel
+{
+    public function parents(): MorphMany
+    {
+        return $this->morphMany(ParentModel::class, 'parent');
+    }
+}
+```
+
+## Testing Polymorphic Relationships
+
+When testing polymorphic relationships, you need to verify that both models
+models are correctly related and that the foreign key is being stored corre
+correctly.
+
+```php
+// Test case for polymorphic relationships
+public function test_polymorphic_relationships()
+{
+    // Create a parent model and save it to the database
+    $parent = new ParentModel();
+    $parent->name = 'Parent Model';
+    $parent->save();
+
+    // Create two child models that are related to the same parent model
+    $child1 = new ChildModel();
+    $child1->name = 'Child 1';
+    $child1->parent_id = $parent->id;
+    $child1->save();
+
+    $child2 = new ChildModel();
+    $child2->name = 'Child 2';
+    $child2->parent_id = $parent->id;
+    $child2->save();
+
+    // Test that the parent model's children relationship returns both chil
+child models
+    foreach ($parent->children as $child) {
+        $this->assertEquals($child->name, 'Child 1');
+        $this->assertEquals($child->name, 'Child 2');
+    }
+
+    // Test that the child model's parents relationship returns the parent 
+model
+    foreach ($child1->parents as $parent) {
+        $this->assertEquals($parent->name, 'Parent Model');
+    }
+}
+```
+
+This allows for a more flexible and dynamic way of defining relationships b
+between models in Laravel.

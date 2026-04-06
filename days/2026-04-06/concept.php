@@ -1,52 +1,50 @@
-// Define a base model for the User entity
+// Define the BaseModel class that will be used for polymorphic relationshi
+relationships
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class User extends Model
+class BaseModel extends Model
 {
-    // Define a polymorphic relationship with the Post entity
-    public function posts(): HasMany
+    // Create a morphMany relationship with the BaseModel that will store f
+foreign keys to other models
+    public function children(): MorphMany
     {
-        return $this->hasMany(Post::class, 'user_id');
+        return $this->morphMany(BaseModel::class, 'child');
     }
 }
 
-// Define a model for the Post entity that has a user_id foreign key
+// Define the ParentModel class that will be used as the parent model in th
+the polymorphic relationship
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
-class Post extends Model
+class ParentModel extends BaseModel
 {
-    // Define a relationship with the User entity that has an inverse on th
-the posts() method
-    public function user(): BelongsTo
+    // Create a morphOne relationship with another model in the polymorphic
+polymorphic relationship chain
+    public function child(): MorphOne
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphOne(ParentModel::class, 'parent');
     }
-
-    // Define a polymorphic pivot table for the many-to-many relationship
-    protected $table = 'post_user_pivot';
 }
 
-// Define a model for the Comment entity that has a post_id foreign key
+// Define the ChildModel class that will be used as the child model in the 
+polymorphic relationship
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Comment extends Model
+class ChildModel extends BaseModel
 {
-    // Define a relationship with the Post entity that has an inverse on th
-the comments() method
-    public function posts(): HasMany
+    // Create a morphMany relationship with the ParentModel that will store
+store foreign keys to other models
+    public function parents(): MorphMany
     {
-        return $this->hasMany(Post::class, 'post_id');
+        return $this->morphMany(ParentModel::class, 'parent');
     }
-
-    // Define a polymorphic pivot table for the many-to-many relationship
-    protected $table = 'comment_post_pivot';
 }
