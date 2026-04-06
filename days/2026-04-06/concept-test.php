@@ -1,47 +1,61 @@
-// File: tests/Console/Commands/CreateUserTest.php
+// Test the polymorphic relationships using PHPUnit
+namespace Tests\Models;
 
-namespace Tests\Console\Commands;
+use App\Models\User;
+use App\Models\Post;
+use App\Models\Comment;
 
-use App\Console\Commands>CreateUser;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Illuminate\Foundation\Testing\TestCase;
-use Illuminate\Support\Facades\DB;
-
-class CreateUserTest extends TestCase
+class PolymorphicRelationshipTest extends TestCase
 {
-    use DatabaseMigrations;
-
-    public function testCreateUserSuccess()
+    public function testUserHasPosts()
     {
-        $this->artisan('create:user', ['name' => 'John Doe', 'email' => 'jo
-'john@example.com']);
-        $user = User::where('email', 'john@example.com')->first();
+        // Create a new User instance
+        $user = factory(User::class)->create();
 
-        $this->assertInstanceOf(User::class, $user);
-        $this->assertEquals('John Doe', $user->name);
+        // Get the posts associated with the user
+        $posts = $user->posts()->get();
+
+        // Verify that there is at least one post associated with the user
+        self::assertGreaterThanOrEqual(1, count($posts));
     }
 
-    public function testCreateUserFail()
+    public function testUserHasComments()
     {
-        $this->artisan('create:user', ['name' => 'John Doe', 'email' => 'jo
-'john@example.com']);
-        $this->artisan('create:user', ['name' => 'Jane Doe', 'email' => 'jo
-'john@example.com']);
+        // Create a new User instance
+        $user = factory(User::class)->create();
 
-        $user = User::where('email', 'john@example.com')->first();
+        // Get the comments associated with the user
+        $comments = $user->comments()->get();
 
-        $this->null($user);
+        // Verify that there is at least one comment associated with the us
+user
+        self::assertGreaterThanOrEqual(1, count($comments));
     }
 
-    public function testCreateUserFailExisting()
+    public function testPostHasUserAndComments()
     {
-        $this->artisan('create:user', ['name' => 'John Doe', 'email' => 'jo
-'john@example.com']);
-        $this->artisan('create:user', ['name' => 'Jane Doe', 'email' => 'jo
-'john@example.com']);
+        // Create a new Post instance
+        $post = factory(Post::class)->create();
 
-        $user = User::where('email', 'john@example.com')->first();
+        // Get the user and comments associated with the post
+        $user = $post->user()->first();
+        $comments = $post->comments()->get();
 
-        $this->assertInstanceOf(User::class, $user);
+        // Verify that there is a user and at least one comment associated 
+with the post
+        self::assertNotNull($user);
+        self::assertGreaterThanOrEqual(1, count($comments));
+    }
+
+    public function testCommentHasPost()
+    {
+        // Create a new Comment instance
+        $comment = factory(Comment::class)->create();
+
+        // Get the post associated with the comment
+        $post = $comment->posts()->first();
+
+        // Verify that there is a post associated with the comment
+        self::assertNotNull($post);
     }
 }

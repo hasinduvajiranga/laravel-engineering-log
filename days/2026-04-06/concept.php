@@ -1,60 +1,52 @@
-// File: app/Console/Commands/CreateUser.php
+// Define a base model for the User entity
+namespace App\Models;
 
-namespace App\Console\Commands;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Illuminate\Console\Command;
-use App\Models\User;
-
-class CreateUser extends Command
+class User extends Model
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'create:user {name} {email}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create a new user';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    // Define a polymorphic relationship with the Post entity
+    public function posts(): HasMany
     {
-        parent::__construct();
+        return $this->hasMany(Post::class, 'user_id');
+    }
+}
+
+// Define a model for the Post entity that has a user_id foreign key
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Post extends Model
+{
+    // Define a relationship with the User entity that has an inverse on th
+the posts() method
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
+    // Define a polymorphic pivot table for the many-to-many relationship
+    protected $table = 'post_user_pivot';
+}
+
+// Define a model for the Comment entity that has a post_id foreign key
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Comment extends Model
+{
+    // Define a relationship with the Post entity that has an inverse on th
+the comments() method
+    public function posts(): HasMany
     {
-        $name = $this->argument('name');
-        $email = $this->argument('email');
-
-        if (!userExists($email)) {
-            User::create([
-                'name' => $name,
-                'email' => $email,
-            ]);
-
-            $this->info("User created successfully");
-        } else {
-            $this->error("Email already exists");
-        }
+        return $this->hasMany(Post::class, 'post_id');
     }
 
-    private function userExists($email)
-    {
-        return User::where('email', $email)->exists();
-    }
+    // Define a polymorphic pivot table for the many-to-many relationship
+    protected $table = 'comment_post_pivot';
 }

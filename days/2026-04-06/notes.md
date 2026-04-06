@@ -1,72 +1,65 @@
-# Custom Artisan Commands
+# Polymorphic Relationships
 
-Custom Artisan commands allow you to extend the functionality of Laravel's 
-command-line interface. They provide a flexible way to automate tasks and i
-interact with your application.
+Polymorphic relationships are a powerful tool in Laravel that allow you to 
+define a many-to-many relationship between two tables, but instead of using
+using a separate pivot table, you use the polymorphic pivot table feature.
 
-## Creating a New Command
+## Benefits
 
-To create a new custom Artisan command, open the `app/Console/Commands` dir
-directory and create a new PHP file (e.g., `CreateUser.php`). Define the na
-namespace and class structure for your command.
+*   Simplifies database schema design
+*   Reduces the need for additional pivot tables
+*   Allows for more flexible and dynamic relationships
+
+## How it works
+
+1.  Define a base model that represents the entity with the polymorphic rel
+relationship.
+2.  Define an inverse method on the related model that uses the `BelongsTo`
+`BelongsTo` or `HasMany` trait to establish the relationship.
+3.  Use the `HasMany` or `BelongsTo` trait on the inverse method to define 
+the relationship.
+4.  Inverse methods can also be used to establish relationships between mod
+models in different tables.
+
+## Example
+
+Consider a scenario where you have a `User` entity that has multiple `Post`
+`Post`s and multiple `Comment`s associated with it, but each post has only 
+one user. You could use polymorphic relationships to define the relationshi
+relationships like this:
 
 ```php
-namespace App\Console\Commands;
-
-use Illuminate\Console\Command;
-```
-
-Then, define the signature of your command using the `$signature` property.
-property. The syntax is `command:name {option1} [argument1]`.
-
-```php
-protected $signature = 'create:user {name} {email}';
-```
-
-Next, implement the logic for your command in the `handle` method.
-
-```php
-public function handle()
+class Post extends Model
 {
-    // Command logic here
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    protected $table = 'post_user_pivot';
+}
+
+class Comment extends Model
+{
+    public function post(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    protected $table = 'comment_post_pivot';
 }
 ```
 
-## Testing Custom Commands
+In this example, the `Post` model has a polymorphic relationship with the `
+`User` entity using the `BelongsTo` trait. The `Comment` model has a many-t
+many-to-many relationship with the `Post` entity using the `HasMany` trait.
+trait.
 
-To test a custom Artisan command, you can use Pest or PHPUnit. Here's an ex
-example using Pest:
+## Advantages
 
-```php
-use App\Console\Commands.CreateInstance;
+Polymorphic relationships offer several advantages over traditional pivot t
+table design, including:
 
-it('should create a new user', fn () {
-    Instance::create(['name' => 'John Doe', 'email' => 'john@example.com'])
-'john@example.com']);
-});
-```
-
-Or here's an example using PHPUnit:
-
-```php
-use App\Console\Commands_CreateUser;
-use App\Models_User;
-
-public function testCreateUserSuccess()
-{
-    $user = new CreateUser();
-    $user->handle(['name' => 'John Doe', 'email' => 'john@example.com']);
-
-    $this->assertInstanceOf(User::class, $user);
-    $this->assertEquals('John Doe', $user->name);
-}
-```
-
-## Best Practices
-
-When creating custom Artisan commands:
-
-*   Keep your command logic simple and focused on a single task.
-*   Use descriptive variable names and follow the PSR-1 coding standard.
-*   Consider adding validation to ensure data integrity.
-*   Test your commands thoroughly using Pest or PHPUnit.
+*   Simplified database schema design
+*   Reduced need for additional pivot tables
+*   More flexible and dynamic relationships
