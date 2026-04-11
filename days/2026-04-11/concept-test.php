@@ -1,43 +1,33 @@
-use Pest\Laravel\Tests\TestCase;
-use Prettus\Laravel\Pint\Rules\NamespaceRule;
+// tests/Conventions/LintingRulesTest.php
 
-class PintTest extends TestCase
+namespace App\tests\Conventions;
+
+use Pint\Linter\Linter;
+use PHPUnit\Framework\TestCase;
+use App\Conventions\LintingRules\TrailingWhitespaceRule;
+
+class TrailingWhitespaceRuleTest extends TestCase
 {
-    public function testNamespaceRule()
+    public function testAppliesTo(): void
     {
-        // Create a custom rule instance
-        $namespaceRule = new NamespaceRule();
-
-        // Define some invalid namespace names
-        $invalidNamespaces = [
-            'foo',
-            'bar-',
-            'baz!',
-        ];
-
-        // Test that the rule throws an exception for each invalid namespac
-namespace
-        foreach ($invalidNamespaces as $namespace) {
-            $this->expectException(Exception::class);
-            $namespaceRule->apply(new Pint());
-        }
+        $linter = new Linter(new TrailingWhitespaceRule());
+        $this->assertTrue($linter->appliesTo(Linter::TRAILING_WHITESPACE));
+$this->assertTrue($linter->appliesTo(Linter::TRAILING_WHITESPACE));
     }
 
-    public function testNamespaceRulePassesValidNamespace()
+    public function testProcess(): void
     {
-        // Create a custom rule instance
-        $namespaceRule = new NamespaceRule();
+        $linter = new Linter(new TrailingWhitespaceRule());
+        $code = 'This is a line of code';
+        $linter->process($code);
 
-        // Define some valid namespace names
-        $validNamespaces = [
-            'Prettus\Laravel\Pint',
-            'Foo\Bar\Baz',
-        ];
+        $this->assertContains($linter->getMessage(), $linter->getMessages()
+$linter->getMessages());
 
-        // Test that the rule passes for each valid namespace
-        foreach ($validNamespaces as $namespace) {
-            $this->notThrowableException(Exception::class);
-            $namespaceRule->apply(new Pint());
-        }
+        $newCode = trim($code);
+        $newLinter = new Linter(new TrailingWhitespaceRule());
+        $newLinter->process($newCode);
+
+        $this->assertFalse($newLinter->hasError($linter->getMessage()));
     }
 }

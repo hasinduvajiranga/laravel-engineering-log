@@ -1,29 +1,35 @@
 # Laravel Pint Custom Rules
 
-Laravel Pint is a popular tool for formatting PHP code. One of the features
-features it provides is the ability to create custom rules for linting and 
-formatting.
+Laravel Pint is a tool for linting and formatting your PHP code. It's tight
+tightly integrated with the Laravel framework, making it easy to use as par
+part of your project's build process.
 
-Creating a custom rule involves defining a class that extends `Prettus\Lara
-`Prettus\Laravel\Pint\Rule`. This class should contain a `pattern` property
-property, which defines the regular expression used to match the code being
-being formatted.
+To create custom linting rules for Pint, you need to extend the `AbstractRu
+`AbstractRule` class provided by Pint. In this example, we'll create a rule
+rule that checks for trailing whitespace in lines of code.
 
-In our example, we define a `NamespaceRule` class that uses a simple patter
-pattern to check if a namespace is properly formatted. The rule applies to 
-all namespace names in the code and throws an exception if it finds an inva
-invalid namespace.
+Here are the steps to implement this rule:
 
-To test this custom rule, we create a test case that defines some invalid n
-namespace names and verifies that our rule throws exceptions for each one. 
-We also define a valid namespace name and verify that our rule passes for i
-it.
+1. Create a new file `TrailingWhitespaceRule.php` in the `src/Conventions/L
+`src/Conventions/LintingRules` namespace.
+2. Extend the `AbstractRule` class and define your custom rule's logic insi
+inside the `process()` method.
+3. Use Pint's `appliesTo()` method to specify which linting rules this rule
+rule applies to (in this case, trailing whitespace).
+4. In the test file, create a new instance of the rule and verify that it a
+applies correctly.
 
-Using custom rules with Laravel Pint provides a powerful way to enforce cod
-coding standards and best practices in your projects. By creating your own 
-custom rules, you can tailor the formatting and linting behavior to meet th
-the needs of your team or project.
+Remember to register your custom rule with Pint by adding it to the `rules`
+`rules` array in your Laravel project's `.pint.php` configuration file.
 
-In conclusion, custom rules are an essential feature of Laravel Pint that a
-allows developers to fine-tune the tool's behavior and ensure consistency t
-throughout their codebase.
+```php
+// config/pint.php
+
+'rules' => [
+    // ...
+    App\Conventions\LintingRules\TrailingWhitespaceRule::class,
+],
+```
+
+Once you've registered your rule, you can run Pint as part of your project'
+project's build process to enforce the new linting standard.

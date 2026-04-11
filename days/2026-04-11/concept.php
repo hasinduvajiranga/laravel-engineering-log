@@ -1,24 +1,28 @@
-// Define a custom rule for Pint that checks if the namespace is properly f
-formatted
-namespace Prettus\Laravel\Pint\Rules;
+// src/Conventions/LintingRules.php
 
-use Prettus\Laravel\Pint\Rule;
-use Prettus\Laravel\Pint\Exception;
-use Prettus\Laravel\Pint\Pint;
+namespace App\Conventions;
 
-class NamespaceRule extends Rule
+use Pint\LintingRules\AbstractRule;
+use Pint\Linter\Linter;
+
+class TrailingWhitespaceRule extends AbstractRule
 {
-    /**
-     * @var string
-     */
-    protected $pattern = '/^[a-zA-Z_][a-zA-Z0-9_]*/';
+    protected $message = 'Trailing whitespace is not allowed';
 
-    public function apply(Pint $pint): void
+    public function appliesTo(): string
     {
-        foreach ($pint->getNamespaceNames() as $namespace) {
-            if (!preg_match($this->pattern, $namespace)) {
-                throw new Exception("Invalid namespace: $namespace");
-            }
+        return Linter::TRAILING_WHITESPACE;
+    }
+
+    public function process(Linter $linter, string $code): void
+    {
+        if ($this->apply($linter, $code)) {
+            $linter->error($this->message);
         }
+    }
+
+    private function apply(Linter $linter, string $code): bool
+    {
+        return trim($code) !== $code;
     }
 }
