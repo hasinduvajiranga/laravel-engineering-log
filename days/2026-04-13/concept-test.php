@@ -1,59 +1,84 @@
-<?php
+// File: tests/HttpClientTest.php
 
-use Tests\TestCase;
-use Illuminate\Support\Facades\Gate;
+namespace Tests\Http;
 
-class MiddlewareGroupTest extends TestCase
+use App\Http\Client\HttpClient;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Foundation\Testing\TestCase;
+
+class HttpClientTest extends TestCase
 {
-    public function testMiddlewareGroupAuthenticatesUser()
+    protected function setUp(): void
     {
-        // Create a user and log in
-        $user = App\Models\User::factory()->create();
-        $this->actingAs($user);
-
-        // Make the request to the authenticated route
-        $response = $this->get(route('authenticated.route'));
-
-        // Verify that the response was successful
-        $response->assertOk();
-
-        // Check if the user is authenticated
-        Gate::assertAuthenticated();
-
-        // Assert that the middleware group returned a success response
-        $this->assertTrue($response->wasSuccessful());
+        parent::setUp();
+        $this->client = new HttpClient();
     }
 
-    public function testMiddlewareGroupDoesNotAuthenticateUser()
+    public function testGetSuccess()
     {
-        // Make the request to the unauthenticated route
-        $response = $this->get(route('unauthenticated.route'));
-
-        // Verify that the response was not successful
-        $response->assertStatus(401);
-
-        // Assert that the middleware group returned an error response
-        $this->assertFalse($response->wasSuccessful());
+        $response = $this->client->get('https://jsonplaceholder.typicode.co
+$this->client->get('https://jsonplaceholder.typicode.com/todos/1');
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertInstanceOf(json_decode($response->getBody()->getConten
+$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
+true), $response->getBody()->getContents());
     }
 
-    public function testRateLimitMiddleware()
+    public function testGetFailure()
     {
-        // Create a user and log in with multiple requests within the rate 
-limit window
-        $user = App\Models\User::factory()->create();
-        $this->actingAs($user);
+        $this->expectException(RequestException::class);
+        $this->client->get('https://non-existent-url.com');
+    }
 
-        for ($i = 0; $i < config('rate-limit.limit'); $i++) {
-            $response = $this->get(route('rate-limited.route'));
-        }
+    public function testPostSuccess()
+    {
+        $data = ['title' => 'foo', 'body' => 'bar'];
+        $response = $this->client->post('https://jsonplaceholder.typicode.c
+$this->client->post('https://jsonplaceholder.typicode.com/posts', $data);
+        $this->assertEquals(201, $response->getStatusCode());
+        $this->assertInstanceOf(json_decode($response->getBody()->getConten
+$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
+true), json_decode($response->getBody()->getContents(), true));
+    }
 
-        // Make another request to the rate-limited route
-        $response = $this->get(route('rate-limited.route'));
+    public function testPostFailure()
+    {
+        $this->expectException(RequestException::class);
+        $this->client->post('https://non-existent-url.com', ['title' => 'fo
+'foo', 'body' => 'bar']);
+    }
 
-        // Verify that the response was not successful
-        $response->assertStatus(429);
+    public function testPutSuccess()
+    {
+        $data = ['title' => 'foo', 'body' => 'bar'];
+        $response = $this->client->put('https://jsonplaceholder.typicode.co
+$this->client->put('https://jsonplaceholder.typicode.com/posts/1', $data);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertInstanceOf(json_decode($response->getBody()->getConten
+$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
+true), json_decode($response->getBody()->getContents(), true));
+    }
 
-        // Assert that the middleware group returned an error response
-        $this->assertFalse($response->wasSuccessful());
+    public function testPutFailure()
+    {
+        $this->expectException(RequestException::class);
+        $this->client->put('https://non-existent-url.com', ['title' => 'foo
+'foo', 'body' => 'bar']);
+    }
+
+    public function testDeleteSuccess()
+    {
+        $response = $this->client->delete('https://jsonplaceholder.typicode
+$this->client->delete('https://jsonplaceholder.typicode.com/todos/1');
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertInstanceOf(json_decode($response->getBody()->getConten
+$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
+true), json_decode($response->getBody()->getContents(), true));
+    }
+
+    public function testDeleteFailure()
+    {
+        $this->expectException(RequestException::class);
+        $this->client->delete('https://non-existent-url.com');
     }
 }

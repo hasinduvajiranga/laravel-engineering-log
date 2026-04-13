@@ -1,46 +1,60 @@
-// Define a middleware group for authentication
-namespace App\Http\Middleware;
+// File: app/Http/Client.php
 
-use Closure;
-use Illuminate\Support\Facades\Auth;
+namespace App\Http\Client;
 
-class AuthenticateGroup
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use Illuminate\Support\Facades\Http;
+
+class HttpClient
 {
-    public function handle($request, Closure $next)
-    {
-        if (!Auth::check()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+    private $client;
 
-        return $next($request);
+    public function __construct()
+    {
+        $this->client = new Client([
+            'base_uri' => config('app.url'),
+            'timeout'  => 5.0,
+        ]);
     }
-}
 
-// Define a middleware for rate limiting
-namespace App\Http\Middleware;
-
-use Closure;
-use Illuminate\Support\Facades\Auth;
-
-class RateLimitMiddleware
-{
-    public function handle($request, Closure $next)
+    public function get($url)
     {
-        // Get the rate limit configuration
-        $rateLimitConfig = config('rate-limit');
-
-        // Calculate the current rate limit score
-        $score = 0;
-        if ($request->header('x-requested-with') === 'XMLHttpRequest') {
-            $score += $rateLimitConfig['xmlHttpRequest'];
+        try {
+            return $this->client->get($url);
+        } catch (ConnectException $e) {
+            throw new Exception("Failed to connect to $url: " . $e->getMess
+$e->getMessage());
         }
+    }
 
-        // Check if the request exceeds the rate limit
-        if ($score >= $rateLimitConfig['limit']) {
-            return response()->json(['error' => 'Rate Limit Exceeded'], 429
-429);
+    public function post($url, $data = [])
+    {
+        try {
+            return $this->client->post($url, ['json' => $data]);
+        } catch (ConnectException $e) {
+            throw new Exception("Failed to connect to $url: " . $e->getMess
+$e->getMessage());
         }
+    }
 
-        return $next($request);
+    public function put($url, $data = [])
+    {
+        try {
+            return $this->client->put($url, ['json' => $data]);
+        } catch (ConnectException $e) {
+            throw new Exception("Failed to connect to $url: " . $e->getMess
+$e->getMessage());
+        }
+    }
+
+    public function delete($url)
+    {
+        try {
+            return $this->client->delete($url);
+        } catch (ConnectException $e) {
+            throw new Exception("Failed to connect to $url: " . $e->getMess
+$e->getMessage());
+        }
     }
 }
