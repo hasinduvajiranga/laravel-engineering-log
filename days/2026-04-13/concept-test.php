@@ -1,84 +1,58 @@
-// File: tests/HttpClientTest.php
+// tests/ObserverTest.php
 
-namespace Tests\Http;
+namespace Tests\Feature;
 
-use App\Http\Client\HttpClient;
-use GuzzleHttp\Exception\RequestException;
-use Illuminate\Foundation\Testing\TestCase;
+use App\Models\User;
+use App\Observers\UserObserver;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
+use Laravel\Dusk\Browser;
+use Pest\LaravelTestCase;
 
-class HttpClientTest extends TestCase
+class ObserverTest extends LaravelDuskTestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->client = new HttpClient();
+
+        UserObserver::observe(User::class);
     }
 
-    public function testGetSuccess()
+    public function testUserCreatedEvent()
     {
-        $response = $this->client->get('https://jsonplaceholder.typicode.co
-$this->client->get('https://jsonplaceholder.typicode.com/todos/1');
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertInstanceOf(json_decode($response->getBody()->getConten
-$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
-true), $response->getBody()->getContents());
+        // Create a new user and verify it's observed by the UserObserver
+        $user = factory(User::class)->create();
+
+        // Verify that the 'created' event was triggered for this model
+        self::assertTrue(\Log::recorded('User created: ' . $user->name));
     }
 
-    public function testGetFailure()
+    public function testUserUpdatedEvent()
     {
-        $this->expectException(RequestException::class);
-        $this->client->get('https://non-existent-url.com');
+        // Create a new user and update it
+        $user = factory(User::class)->create();
+        $user->update(['email' => 'new@example.com']);
+
+        // Verify that the 'updated' event was triggered for this model
+        self::assertTrue(\Log::recorded('User updated'));
     }
 
-    public function testPostSuccess()
+    public function testSaveChangesEvent()
     {
-        $data = ['title' => 'foo', 'body' => 'bar'];
-        $response = $this->client->post('https://jsonplaceholder.typicode.c
-$this->client->post('https://jsonplaceholder.typicode.com/posts', $data);
-        $this->assertEquals(201, $response->getStatusCode());
-        $this->assertInstanceOf(json_decode($response->getBody()->getConten
-$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
-true), json_decode($response->getBody()->getContents(), true));
+        // Create a new user and update it
+        $user = factory(User::class)->create();
+        $user->update(['email' => 'new@example.com']);
+
+        // Verify that the Save Changes event was triggered for this model
+        self::assertTrue($user->saveChanges());
     }
 
-    public function testPostFailure()
+    protected function tearDown(): void
     {
-        $this->expectException(RequestException::class);
-        $this->client->post('https://non-existent-url.com', ['title' => 'fo
-'foo', 'body' => 'bar']);
-    }
+        parent::tearDown();
 
-    public function testPutSuccess()
-    {
-        $data = ['title' => 'foo', 'body' => 'bar'];
-        $response = $this->client->put('https://jsonplaceholder.typicode.co
-$this->client->put('https://jsonplaceholder.typicode.com/posts/1', $data);
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertInstanceOf(json_decode($response->getBody()->getConten
-$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
-true), json_decode($response->getBody()->getContents(), true));
-    }
-
-    public function testPutFailure()
-    {
-        $this->expectException(RequestException::class);
-        $this->client->put('https://non-existent-url.com', ['title' => 'foo
-'foo', 'body' => 'bar']);
-    }
-
-    public function testDeleteSuccess()
-    {
-        $response = $this->client->delete('https://jsonplaceholder.typicode
-$this->client->delete('https://jsonplaceholder.typicode.com/todos/1');
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertInstanceOf(json_decode($response->getBody()->getConten
-$this->assertInstanceOf(json_decode($response->getBody()->getContents(), tr
-true), json_decode($response->getBody()->getContents(), true));
-    }
-
-    public function testDeleteFailure()
-    {
-        $this->expectException(RequestException::class);
-        $this->client->delete('https://non-existent-url.com');
+        UserObserver::observe(User::class);
     }
 }

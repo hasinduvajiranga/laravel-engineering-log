@@ -1,60 +1,30 @@
-// File: app/Http/Client.php
+// app/Observers/UserObserver.php
 
-namespace App\Http\Client;
+namespace App\Observers;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
-use Illuminate\Support\Facades\Http;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class HttpClient
+class UserObserver
 {
-    private $client;
-
-    public function __construct()
+    public function created(User $user)
     {
-        $this->client = new Client([
-            'base_uri' => config('app.url'),
-            'timeout'  => 5.0,
-        ]);
+        // Log the user creation event
+        \Log::info('User created: ' . $user->name);
+
+        // Send a notification to the user's email address after creating a
+an account
+        $user->notify(new RegistrationCompleteNotification($user));
     }
 
-    public function get($url)
+    public function updated(User $user)
     {
-        try {
-            return $this->client->get($url);
-        } catch (ConnectException $e) {
-            throw new Exception("Failed to connect to $url: " . $e->getMess
-$e->getMessage());
-        }
-    }
+        // Log the user update event
+        \Log::info('User updated');
 
-    public function post($url, $data = [])
-    {
-        try {
-            return $this->client->post($url, ['json' => $data]);
-        } catch (ConnectException $e) {
-            throw new Exception("Failed to connect to $url: " . $e->getMess
-$e->getMessage());
-        }
-    }
-
-    public function put($url, $data = [])
-    {
-        try {
-            return $this->client->put($url, ['json' => $data]);
-        } catch (ConnectException $e) {
-            throw new Exception("Failed to connect to $url: " . $e->getMess
-$e->getMessage());
-        }
-    }
-
-    public function delete($url)
-    {
-        try {
-            return $this->client->delete($url);
-        } catch (ConnectException $e) {
-            throw new Exception("Failed to connect to $url: " . $e->getMess
-$e->getMessage());
-        }
+        // Trigger the Save Changes event on any listeners registered for t
+this model
+        $user->saveChanges();
     }
 }
