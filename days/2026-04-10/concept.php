@@ -2,9 +2,9 @@
 
 namespace App\Queues;
 
-use Illuminate\Support\Facades\Queue;
-use App\Models\User;
 use App\Contracts\ProcessUserJob;
+use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 
 class ProcessUserJobWorker implements ProcessUserJob
 {
@@ -12,7 +12,7 @@ class ProcessUserJobWorker implements ProcessUserJob
     {
         // Simulate some long-running job
         sleep(10);
-        echo "Processed user {$user->name}" . PHP_EOL;
+        echo "Processed user {$user->name}".PHP_EOL;
     }
 }
 
@@ -28,7 +28,7 @@ class Supervisor
     public function processJob(User $user)
     {
         // Start the job in a separate thread
-        $job = new ProcessUserJobWorker();
+        $job = new ProcessUserJobWorker;
         $this->queue->push($job, $user);
     }
 }
