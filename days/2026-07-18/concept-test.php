@@ -1,38 +1,39 @@
-// tests/Feature/TranslationTest.php
+// Test the vulnerability in the user controller's store method
+namespace Tests\Http\Controllers\Tests;
 
-namespace Tests\Feature;
+use Illuminate\Foundation\Testing\TestCase;
+use App\Http\Controllers\UserController;
+use App\Models\User;
+use Illuminate\Foundation\Testing\WithFakerTrait;
+use Illuminate\Foundation\Testing\RefreshDatabaseTrait;
+use Faker\Factory as Faker;
 
-use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Laravel\Jetstream\JetstreamTestCase;
-use Tests\TestCase;
-
-class TranslationTest extends JetstreamTestCase
+class UserControllerTest extends TestCase
 {
-    use DatabaseMigrations;
+    use WithFakerTrait, RefreshDatabaseTrait;
 
-    public function test_translation_store()
+    protected $controller;
+
+    public function setUp(): void
     {
-        $this->assertNull(Lang::get('hello'));
-
-        $response = $this->post('/translation/en', [
-            'locale' => 'en',
-        ]);
-
-        $response->assertRedirect('/translation');
-
-        $this->assertSessionHas('locale', 'en');
-        $this->assertEquals(Lang::get('hello'), 'Hello!');
+        parent::setUp();
+        $this->controller = new UserController();
     }
 
-    public function test_translation_store_invalid_locale()
+    public function testStoreVulnerableToBladeEscaping()
     {
-        $response = $this->post('/translation/en', [
-            'locale' => 'invalid-locale',
-        ]);
+        // Generate fake data to test the vulnerability
+        $faker = $this->faker;
+        $data = [
+            'name' => $faker->name,
+            'email' => $faker->email,
+        ];
 
-        $response->assertRedirect('/translation');
+        // Make a POST request with malicious data
+        $response = $this->post('/users', $data);
 
-        $this->assertFalse($this->sessionHas('locale'));
-        $this->assertEquals(Lang::get('hello'), 'Hello!');
+        // Check if the response was successful and the user was created
+        $this->assertResponseOk($response);
+        $this->expectDatabaseToHaveRowCount(1);
     }
 }

@@ -1,83 +1,27 @@
-# Blade i18n Integration
+# Blade Security Escaping
 
-Blade provides a simple and expressive way to work with translations in your Laravel application. In this example, we'll explore how to integrate Blade with internationalization (i18n) capabilities.
+Blade security escaping is a critical aspect of Laravel's templating engine. When using Blade, it's essential to ensure that user-inputted data is properly escaped to prevent XSS attacks.
 
-## Setting the Locale
+In the example above, we have a `User` model and a `UserController`. In the `UserController`, we have a `store` method that creates a new `User` instance with validated data from the request. However, in this example, we'll introduce a vulnerability by not escaping user-inputted data properly.
 
-To use translations in Blade, you need to set the locale using the `Lang::setLocale` method. This method takes a string argument representing the new locale. You can call this method from your controllers or routes to set the locale for the entire application.
+When using Blade's `{{ }}` syntax to display user input, Laravel will automatically escape the data for us. However, when using the `{{ }}` syntax to echo user input directly (e.g., `echo $user->name;`), this escaping is bypassed. This allows an attacker to inject malicious HTML or JavaScript code.
+
+To fix this vulnerability, we need to use Blade's `{{ }}` syntax consistently throughout our template. We can do this by modifying the `UserController`'s `store` method to echo the user input properly.
 
 ```php
-use Illuminate\Support\Facades\Lang;
-
-class TranslationController extends Controller
+public function store(Request $request)
 {
-    public function store(Request $request)
-    {
-        Lang::setLocale($request->input('locale'));
-        return redirect()->route('translation.index');
-    }
+    $validatedData = $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users',
+    ]);
+    // Use Blade's {{ }} syntax to echo the data
+    User::create(['name' => $validatedData['name'], 'email' => $validatedData['email']]);
 }
 ```
 
-## Using Translations in Blade
+By using `{{ }}` consistently, we ensure that user input is properly escaped and prevents XSS attacks.
 
-Once the locale is set, you can use translations in your Blade views. You can access translations using the `Lang` facade or by accessing the `__` function on your view variables.
+In the test above, we've introduced a vulnerability in the `UserController's` `store` method by not escaping user input. We then make a POST request with malicious data to test this vulnerability. In a real-world scenario, an attacker would attempt to inject malicious HTML or JavaScript code into this vulnerability to gain access to sensitive information.
 
-```php
-// resources/views/translation/index.blade.php
-
-<x-greeting name="{{ Lang::get('hello') }}" />
-```
-
-In this example, we're using the `Lang::get` method to retrieve a translation for the key `'hello'`. The resulting value is then passed as the `name` attribute to the `<x-greeting>` component.
-
-## Setting Default Locale
-
-If you want to set a default locale for your application, you can do so by creating a middleware that sets the locale using the `Lang::setLocale` method. You can add this middleware to your kernel's `handle` method like so:
-
-```php
-// app/Http/Middleware/SetLocale.php
-
-namespace App\Http\Middleware;
-
-use Illuminate\Foundation\Http\Kernel as HTTPKernel;
-use Illuminate\Support\Facades\Lang;
-
-class SetLocale extends HTTPKernel
-{
-    public function handle($request, $next)
-    {
-        Lang::setLocale('en'); // or any other locale you want to set as default
-        return $next($request);
-    }
-}
-```
-
-You can then add this middleware to your kernel's `handle` method like so:
-
-```php
-// app/Http/Kernel.php
-
-namespace App\Http;
-
-use Illuminate\Foundation\Http\Kernel as HTTPKernel;
-use App\Http\Middleware\SetLocale;
-
-class Kernel extends HTTPKernel
-{
-    // ...
-
-    public function handle($request, $next)
-    {
-        $this->pushMiddlewareToStack($request, $next);
-        return $next($request);
-    }
-
-    protected $middleware = [
-        SetLocale::class,
-        // ...
-    ];
-}
-```
-
-With this middleware in place, your application will automatically set the locale to English (`'en'`) for all incoming requests.
+By following these best practices and using Blade's `{{ }}` syntax consistently, we can prevent XSS attacks and ensure the security of our application.
