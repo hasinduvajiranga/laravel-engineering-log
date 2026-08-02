@@ -3,7 +3,7 @@
         'name' => 'hasinduvajiranga/laravel-engineering-log',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '6a174be2ba8d98f50142f55d861e8b8f5fb701e2',
+        'reference' => 'f7f26536e0d2615cbfe9edf34a42ee5a70c732fa',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -49,7 +49,7 @@
         'hasinduvajiranga/laravel-engineering-log' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '6a174be2ba8d98f50142f55d861e8b8f5fb701e2',
+            'reference' => 'f7f26536e0d2615cbfe9edf34a42ee5a70c732fa',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
