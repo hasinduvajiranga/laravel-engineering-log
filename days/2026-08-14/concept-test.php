@@ -1,8 +1,8 @@
 <?php
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Post;
+use App\Models\User;
+use Tests\TestCase;
 
 class BelongsToManyAttachDetachTest extends TestCase
 {
