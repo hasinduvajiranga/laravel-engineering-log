@@ -2,6 +2,7 @@
 
 namespace App\Queries;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +11,7 @@ class CrossDatabaseQuery extends Model
     /**
      * Get all users from the primary database
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getUsersFromPrimary()
     {
@@ -20,7 +21,7 @@ class CrossDatabaseQuery extends Model
     /**
      * Get all users from the secondary database
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getUsersFromSecondary()
     {
